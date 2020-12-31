@@ -15,7 +15,6 @@ app = Flask(__name__)
 def main():
     reqBody = request.get_json()
     input = reqBody['input']
-    #i = input
     while(1):
         print("Select the operation you want to do:\n")
         print("1-Create\n2-Read\n3-Delete\n4-Show all\n5-Exit\n")
@@ -31,7 +30,6 @@ def main():
             return(d)
         else:
             print("Invalid Operation\n")
-    #print(d)
     t1=Thread(target=(create or read or delete)) 
     t1.start()
     time.sleep(1)
@@ -51,37 +49,32 @@ def main():
 
 @app.route("/create",methods = ["POST"])
 def create():
-    reqBody = request.get_json()
-    key = reqBody['key']
-    value = reqBody['value']
-    print("Enter the key value pair to add\n")
-    #key,value=map(str,input().split())
-    #key=int(key)
-    print("Time-To-Live property-------Enter the time in minutes\n")
-    ti=reqBody['time']
-    ti=ti*60
+    reqBody = request.get_json()    #get response from json
+    key = reqBody['key']            #get Key from json  
+    value = reqBody['value']        #get value from json
+    ti=reqBody['time']              #get time in minutes from json
+    ti=ti*60                        #converting time from minutes to seconds
     if key in d:
         return("Error: this key is Already exists:\n")
     else:
-        if len(d)<(1024*1024*1024) and len(value)<=(4*1024):
+        if len(d)<(1024*1024*1024) and len(value)<=(4*1024):        #condition if file size exceeds 1 GB or Value size exceeds 16KB
             if ti==0:
                 l=[value,ti]
             else:
                 l=[value,time.time()+ti]
-            if len(key)<32:
+            if len(key)<32:                                         #key size must be of 32 Char
                 d[key]=l
-                return("Successfully Created\n")
+                return("Successfully Created\n")                    #key-Value pair created sucessfully
             else:
                 return("Error: Invalid Key value\n")
         else:
             return("Error: Memory Limit exceed\n") 
 
-@app.route("/read",methods = ["POST"])
+@app.route("/read",methods = ["POST"])                  #read function
 def read():
     print("Enter key to read the pair\n")
-    reqBody = request.get_json()
+    reqBody = request.get_json()                        #getting input from json file. 
     key = reqBody['key']
-    #key = int(key)
     res = {}
     if key not in d:
         return("Error: Key does not Exist\n")
@@ -89,22 +82,19 @@ def read():
         b=d[key]
         if b[1]!=0:
             if time.time()<b[1]:
-                #res=str(key)+":"+str(b[0])
                 res[key] = b[0]
                 return(res)
             else:
                 return("Error: time to live expired\n")
         else:
-            #res=str(key)+":"+str(b[0])
             res[key] = b[0]
             return(res)
 
-@app.route("/delete",methods = ["POST"])
+@app.route("/delete",methods = ["POST"])                #delete function.
 def delete():
     print("Enter the key to delete\n")
-    reqBody = request.get_json()
+    reqBody = request.get_json()                        #getting input from json file.
     key = reqBody['key']
-    #key = int(key)
     if key not in d:
         return("Error: Key does not Exist\n")
     else:
